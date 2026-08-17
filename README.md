@@ -80,7 +80,7 @@ mvn javafx:run
 mvn test
 ```
 
-## Project Structure
+## Planned Project Structure
 
 ```
 BattleGrid/
