@@ -26,4 +26,36 @@ class GameBoardTest {
         assertFalse(board.isInside(new Position(5, 0)));
         assertFalse(board.isInside(new Position(0, 5)));
     }
+
+    @Test
+    void movePlayerToAdjacentCell(){
+        GameBoard board = new GameBoard();
+
+        boolean moved = board.movePlayer(new Position(2,3));
+
+        assertTrue(moved);
+        assertEquals(new Position(2,3),board.getPlayerRobot().getPosition());
+
+    }
+
+    @Test
+    void rejectdiagonalmovement(){
+        GameBoard board = new GameBoard();
+
+        boolean moved = board.movePlayer(new Position(3,3));
+
+        assertFalse(moved);
+        assertEquals(new Position(2,2),board.getPlayerRobot().getPosition());
+
+    }
+
+    @Test
+    void rejectoutsidemove(){
+        GameBoard board = new GameBoard();
+
+        boolean moved = board.movePlayer(new Position(5,3));
+
+        assertFalse(moved);
+
+    }
 }

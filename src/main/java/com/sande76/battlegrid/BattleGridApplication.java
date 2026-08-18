@@ -11,58 +11,45 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 
-// Builds and displays the first BattleGrid screen.
+// Builds and displays the BattleGrid screen.
 public final class BattleGridApplication extends Application {
 
-    private static final double CELL_SIZE = 76;
+    private static final double CELL_SIZE = 60;
+    private BorderPane root;
 
     @Override
     public void start(Stage stage) {
-        // Create the starting game state.
         GameBoard board = new GameBoard();
 
-        // Arrange the header, board, and footer.
-        BorderPane root = new BorderPane();
-        root.setPadding(new Insets(24));
-        root.setStyle("-fx-background-color: #101827;");
-        root.setTop(createHeader());
+        // Place the title, grid, and status text on the screen.
+        root = new BorderPane();
+        root.setPadding(new Insets(20));
+        root.setTop(createTitle());
         root.setCenter(createGrid(board));
-        root.setBottom(createFooter(board));
+        root.setBottom(createStatus());
 
-        Scene scene = new Scene(root, 500, 580);
+        Scene scene = new Scene(root, 380, 420);
         stage.setTitle("BattleGrid");
-        stage.setMinWidth(470);
-        stage.setMinHeight(550);
+        stage.setResizable(false);
         stage.setScene(scene);
         stage.show();
     }
 
-    // Creates the title shown above the board.
-    private VBox createHeader() {
-        Label title = new Label("BATTLEGRID");
-        title.setStyle("-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: #f8fafc;");
-
-        Label subtitle = new Label("Milestone 1 · 5×5 arena");
-        subtitle.setStyle("-fx-font-size: 14px; -fx-text-fill: #94a3b8;");
-
-        VBox header = new VBox(4, title, subtitle);
-        header.setAlignment(Pos.CENTER);
-        header.setPadding(new Insets(0, 0, 22, 0));
-        return header;
+    private Label createTitle() {
+        Label title = new Label("BattleGrid");
+        title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
+        BorderPane.setAlignment(title, Pos.CENTER);
+        BorderPane.setMargin(title, new Insets(0, 0, 20, 0));
+        return title;
     }
 
     private GridPane createGrid(GameBoard board) {
         GridPane grid = new GridPane();
         grid.setAlignment(Pos.CENTER);
-        grid.setHgap(5);
-        grid.setVgap(5);
 
-        // Add one visual cell for every board position.
+        // Add one cell for every board position.
         for (int row = 0; row < board.getSize(); row++) {
             for (int column = 0; column < board.getSize(); column++) {
                 Position position = new Position(row, column);
@@ -74,53 +61,38 @@ public final class BattleGridApplication extends Application {
     }
 
     private StackPane createCell(GameBoard board, Position position) {
+
         StackPane cell = new StackPane();
         cell.setPrefSize(CELL_SIZE, CELL_SIZE);
-        cell.setMinSize(CELL_SIZE, CELL_SIZE);
+        cell.setStyle("-fx-background-color: white; -fx-border-color: black;");
 
-        // Alternate tile colors to make the grid easier to see.
-        boolean alternate = (position.row() + position.column()) % 2 == 0;
-        String background = alternate ? "#1e293b" : "#263449";
-        cell.setStyle("-fx-background-color: " + background + ";"
-                + "-fx-background-radius: 8px;"
-                + "-fx-border-color: #475569;"
-                + "-fx-border-radius: 8px;");
-
-        // Draw the player marker when the robot occupies this cell.
+        // Mark the cell occupied by the player robot.
         board.getRobotAt(position).ifPresent(robot -> {
-            Circle marker = new Circle(25, Color.web("#38bdf8"));
-            marker.setStroke(Color.web("#bae6fd"));
-            marker.setStrokeWidth(3);
-
-            Label initial = new Label("P");
-            initial.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #082f49;");
-
-            cell.getChildren().addAll(marker, initial);
+            Label player = new Label("P");
+            player.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
+            cell.setStyle("-fx-background-color: lightblue; -fx-border-color: black;");
+            cell.getChildren().add(player);
             cell.setAccessibleText(robot.getName());
+        });
+
+        cell.setOnMouseClicked(event -> {
+            if (board.movePlayer(position)) {
+                refreshGrid(board);
+            }
         });
 
         return cell;
     }
+    
+    private void refreshGrid(GameBoard board){
+        root.setCenter(createGrid(board));
+    }
 
-    // Shows information about the player robot below the board.
-    private VBox createFooter(GameBoard board) {
-        Position position = board.getPlayerRobot().getPosition();
-
-        Label robotName = new Label(board.getPlayerRobot().getName());
-        robotName.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #38bdf8;");
-
-        Label positionLabel = new Label(
-                "Starting position: row " + (position.row() + 1) + ", column " + (position.column() + 1)
-        );
-        positionLabel.setStyle("-fx-text-fill: #cbd5e1;");
-
-        Label nextStep = new Label("Next milestone: move the robot between cells");
-        nextStep.setStyle("-fx-text-fill: #64748b;");
-
-        VBox footer = new VBox(5, robotName, positionLabel, nextStep);
-        footer.setAlignment(Pos.CENTER);
-        footer.setPadding(new Insets(22, 0, 0, 0));
-        return footer;
+    private Label createStatus() {
+        Label status = new Label("P = Player Robot");
+        BorderPane.setAlignment(status, Pos.CENTER);
+        BorderPane.setMargin(status, new Insets(20, 0, 0, 0));
+        return status;
     }
 
     public static void main(String[] args) {

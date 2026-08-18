@@ -8,7 +8,7 @@ import java.util.Objects;
 public final class Robot {
 
     private final String name;
-    private final Position position;
+    private Position position;
 
     public Robot(String name, Position position) {
         if (name == null || name.isBlank()) {
@@ -26,4 +26,9 @@ public final class Robot {
     public Position getPosition() {
         return position;
     }
+
+    public void moveTo(Position newPosition){
+        this.position = Objects.requireNonNull(newPosition, "newPosition cannot be null");
+    }
+
 }
