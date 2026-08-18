@@ -11,6 +11,7 @@ public final class GameBoard {
 
     private final int size; 
     private final Robot playerRobot;
+    private final Robot enemyRobot;
 
     public GameBoard() {
         this(DEFAULT_SIZE);
@@ -24,6 +25,7 @@ public final class GameBoard {
         this.size = size;
         int center = size / 2;
         this.playerRobot = new Robot("Player Robot", new Position(center, center));
+        this.enemyRobot = new Robot("Enemy Robot", new Position(0,0));
     }
 
     public int getSize() {
@@ -32,6 +34,10 @@ public final class GameBoard {
 
     public Robot getPlayerRobot() {
         return playerRobot;
+    }
+
+    public Robot getEnemyRobot(){
+        return enemyRobot;
     }
 
     public boolean isInside(Position position) {
@@ -43,12 +49,20 @@ public final class GameBoard {
             return Optional.of(playerRobot);
         }
 
+        if (enemyRobot.getPosition().equals(position)) {
+            return Optional.of(enemyRobot);
+        }
+
         return Optional.empty();
     }
 
     public boolean movePlayer(Position target){
 
         if (!isInside(target)){
+            return false;
+        }
+
+        if (enemyRobot.getPosition().equals(target)) {
             return false;
         }
 

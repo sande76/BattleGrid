@@ -13,6 +13,9 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+
 // Builds and displays the BattleGrid screen.
 public final class BattleGridApplication extends Application {
 
@@ -68,10 +71,16 @@ public final class BattleGridApplication extends Application {
 
         // Mark the cell occupied by the player robot.
         board.getRobotAt(position).ifPresent(robot -> {
-            Label player = new Label("P");
-            player.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
-            cell.setStyle("-fx-background-color: lightblue; -fx-border-color: black;");
-            cell.getChildren().add(player);
+            boolean isPlayer = robot == board.getPlayerRobot();
+            Circle marker = new Circle(20);
+
+            marker.setFill(isPlayer ? Color.CORNFLOWERBLUE : Color.LIGHTCORAL );
+            marker.setStroke(Color.BLACK);
+
+            Label initial = new Label(isPlayer ? "P" : "E");
+            initial.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+
+            cell.getChildren().addAll(marker, initial);
             cell.setAccessibleText(robot.getName());
         });
 
@@ -89,7 +98,7 @@ public final class BattleGridApplication extends Application {
     }
 
     private Label createStatus() {
-        Label status = new Label("P = Player Robot");
+        Label status = new Label("Blue = Player    Red = Enemy");
         BorderPane.setAlignment(status, Pos.CENTER);
         BorderPane.setMargin(status, new Insets(20, 0, 0, 0));
         return status;

@@ -58,4 +58,27 @@ class GameBoardTest {
         assertFalse(moved);
 
     }
+
+    @Test
+    void placesEnemyInTopLeftCorner() {
+        GameBoard board = new GameBoard();
+
+        assertEquals(new Position(0, 0),board.getEnemyRobot().getPosition());
+
+        assertTrue(board.getRobotAt(new Position(0, 0)).isPresent());
+    }
+
+    @Test
+    void preventsPlayerEnteringEnemyCell() {
+        GameBoard board = new GameBoard();
+
+        board.movePlayer(new Position(1, 2));
+        board.movePlayer(new Position(0, 2));
+        board.movePlayer(new Position(0, 1));
+
+        boolean moved = board.movePlayer(new Position(0, 0));
+
+        assertFalse(moved);
+        assertEquals(new Position(0, 1),board.getPlayerRobot().getPosition());
+    }
 }
