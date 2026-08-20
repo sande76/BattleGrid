@@ -6,7 +6,8 @@ The project demonstrates object-oriented design through robot state, grid moveme
 
 ## Status
 
-Under development. The current milestone is a playable 5x5 arena with one player robot, one enemy robot, movement, basic combat, and an automatic enemy turn.
+Under development. 
+The current milestone is a playable 5x5 arena with one player robot, one enemy robot, movement, basic combat, and an automatic enemy turn.
 
 ## Game Mode
 
@@ -102,6 +103,3 @@ BattleGrid/
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Author
-
-**sande76**
