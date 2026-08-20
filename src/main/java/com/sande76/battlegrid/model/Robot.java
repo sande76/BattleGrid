@@ -3,11 +3,16 @@ package com.sande76.battlegrid.model;
 import java.util.Objects;
 
 /**
- * The player-controlled robot currently placed on the board.
+ * Represents a robot with a position, health, and attack damage.
  */
 public final class Robot {
 
+    public static final int DEFAULT_HEALTH = 100;
+    public static final int DEFAULT_ATTACK_DAMAGE = 25;
+
     private final String name;
+    private final int attackDamage;
+    private int health;
     private Position position;
 
     public Robot(String name, Position position) {
@@ -17,6 +22,8 @@ public final class Robot {
 
         this.name = name;
         this.position = Objects.requireNonNull(position, "position cannot be null");
+        this.health = DEFAULT_HEALTH;
+        this.attackDamage = DEFAULT_ATTACK_DAMAGE;
     }
 
     public String getName() {
@@ -27,8 +34,27 @@ public final class Robot {
         return position;
     }
 
-    public void moveTo(Position newPosition){
+    public int getHealth() {
+        return health;
+    }
+
+    public int getAttackDamage() {
+        return attackDamage;
+    }
+
+    public void moveTo(Position newPosition) {
         this.position = Objects.requireNonNull(newPosition, "newPosition cannot be null");
     }
 
+    public void takeDamage(int damage) {
+        if (damage <= 0) {
+            throw new IllegalArgumentException("Damage must be positive");
+        }
+
+        health = Math.max(0, health - damage);
+    }
+
+    public boolean isDestroyed() {
+        return health == 0;
+    }
 }

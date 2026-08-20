@@ -3,13 +3,13 @@ package com.sande76.battlegrid.model;
 import java.util.Optional;
 
 /**
- * Holds the state for the first BattleGrid milestone: a square board and one player robot.
+ * Holds the board state, robots, movement rules, and basic combat rules.
  */
 public final class GameBoard {
 
     public static final int DEFAULT_SIZE = 5;
 
-    private final int size; 
+    private final int size;
     private final Robot playerRobot;
     private final Robot enemyRobot;
 
@@ -25,7 +25,7 @@ public final class GameBoard {
         this.size = size;
         int center = size / 2;
         this.playerRobot = new Robot("Player Robot", new Position(center, center));
-        this.enemyRobot = new Robot("Enemy Robot", new Position(0,0));
+        this.enemyRobot = new Robot("Enemy Robot", new Position(0, 0));
     }
 
     public int getSize() {
@@ -36,7 +36,7 @@ public final class GameBoard {
         return playerRobot;
     }
 
-    public Robot getEnemyRobot(){
+    public Robot getEnemyRobot() {
         return enemyRobot;
     }
 
@@ -49,16 +49,15 @@ public final class GameBoard {
             return Optional.of(playerRobot);
         }
 
-        if (enemyRobot.getPosition().equals(position)) {
+        if (!enemyRobot.isDestroyed() && enemyRobot.getPosition().equals(position)) {
             return Optional.of(enemyRobot);
         }
 
         return Optional.empty();
     }
 
-    public boolean movePlayer(Position target){
-
-        if (!isInside(target)){
+    public boolean movePlayer(Position target) {
+        if (isGameOver() || !isInside(target)) {
             return false;
         }
 
@@ -66,24 +65,34 @@ public final class GameBoard {
             return false;
         }
 
-        // get the current position of the rorbot
-        Position current = playerRobot.getPosition();
-
-        int rowdiff = Math.abs(current.row()-target.row());
-        int coldiff = Math.abs(current.column()-target.column());
-        boolean isAdjacent = rowdiff + coldiff == 1;
-
-        if (!isAdjacent){
+        if (!isAdjacent(playerRobot.getPosition(), target)) {
             return false;
         }
 
         playerRobot.moveTo(target);
         return true;
+    }
 
+    public boolean attackEnemy() {
+        if (enemyRobot.isDestroyed()) {
+            return false;
+        }
+
+        if (!isAdjacent(playerRobot.getPosition(), enemyRobot.getPosition())) {
+            return false;
+        }
+
+        enemyRobot.takeDamage(playerRobot.getAttackDamage());
+        return true;
+    }
+
+    public boolean isGameOver() {
+        return enemyRobot.isDestroyed();
+    }
+
+    private boolean isAdjacent(Position first, Position second) {
+        int rowDifference = Math.abs(first.row() - second.row());
+        int columnDifference = Math.abs(first.column() - second.column());
+        return rowDifference + columnDifference == 1;
     }
 }
-
-// final class — cannot be extended.
-// final method — cannot be overridden.
-// final variable — cannot be reassigned.
-// static — one value is shared by every object of the class.

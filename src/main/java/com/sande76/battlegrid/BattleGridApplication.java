@@ -11,15 +11,15 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
-import javafx.stage.Stage;
-
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.stage.Stage;
 
 // Builds and displays the BattleGrid screen.
 public final class BattleGridApplication extends Application {
 
     private static final double CELL_SIZE = 60;
+
     private BorderPane root;
 
     @Override
@@ -31,9 +31,9 @@ public final class BattleGridApplication extends Application {
         root.setPadding(new Insets(20));
         root.setTop(createTitle());
         root.setCenter(createGrid(board));
-        root.setBottom(createStatus());
+        root.setBottom(createStatus(board));
 
-        Scene scene = new Scene(root, 380, 420);
+        Scene scene = new Scene(root, 380, 430);
         stage.setTitle("BattleGrid");
         stage.setResizable(false);
         stage.setScene(scene);
@@ -64,7 +64,6 @@ public final class BattleGridApplication extends Application {
     }
 
     private StackPane createCell(GameBoard board, Position position) {
-
         StackPane cell = new StackPane();
         cell.setPrefSize(CELL_SIZE, CELL_SIZE);
         cell.setStyle("-fx-background-color: white; -fx-border-color: black;");
@@ -72,9 +71,9 @@ public final class BattleGridApplication extends Application {
         // Mark the cell occupied by the player robot.
         board.getRobotAt(position).ifPresent(robot -> {
             boolean isPlayer = robot == board.getPlayerRobot();
-            Circle marker = new Circle(20);
 
-            marker.setFill(isPlayer ? Color.CORNFLOWERBLUE : Color.LIGHTCORAL );
+            Circle marker = new Circle(20);
+            marker.setFill(isPlayer ? Color.CORNFLOWERBLUE : Color.LIGHTCORAL);
             marker.setStroke(Color.BLACK);
 
             Label initial = new Label(isPlayer ? "P" : "E");
@@ -84,21 +83,42 @@ public final class BattleGridApplication extends Application {
             cell.setAccessibleText(robot.getName());
         });
 
-        cell.setOnMouseClicked(event -> {
-            if (board.movePlayer(position)) {
-                refreshGrid(board);
-            }
-        });
-
+        cell.setOnMouseClicked(event -> handleCellClick(board, position));
         return cell;
     }
-    
-    private void refreshGrid(GameBoard board){
-        root.setCenter(createGrid(board));
+
+    private void handleCellClick(GameBoard board, Position position) {
+        boolean actionCompleted;
+
+        if (board.getEnemyRobot().getPosition().equals(position)) {
+            actionCompleted = board.attackEnemy();
+        } else {
+            actionCompleted = board.movePlayer(position);
+        }
+
+        if (actionCompleted) {
+            refreshBoard(board);
+        }
     }
 
-    private Label createStatus() {
-        Label status = new Label("Blue = Player    Red = Enemy");
+    private void refreshBoard(GameBoard board) {
+        root.setCenter(createGrid(board));
+        root.setBottom(createStatus(board));
+    }
+
+    private Label createStatus(GameBoard board) {
+        String message;
+
+        if (board.isGameOver()) {
+            message = "Enemy defeated - You win!";
+        } else {
+            message = "Player HP: " + board.getPlayerRobot().getHealth()
+                    + "    Enemy HP: " + board.getEnemyRobot().getHealth()
+                    + "\nMove next to the enemy, then click it to attack.";
+        }
+
+        Label status = new Label(message);
+        status.setAlignment(Pos.CENTER);
         BorderPane.setAlignment(status, Pos.CENTER);
         BorderPane.setMargin(status, new Insets(20, 0, 0, 0));
         return status;
