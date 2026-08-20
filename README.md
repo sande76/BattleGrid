@@ -1,106 +1,106 @@
 # BattleGrid
 
-BattleGrid is a turn-based robot arena game developed using Java SE and JavaFX.
+BattleGrid is a single-player, turn-based robot arena game developed with Java 21 and JavaFX.
 
-The project focuses on demonstrating object-oriented programming principles through robot classes, reusable abilities, combat strategies, and modular game architecture.
+The project demonstrates object-oriented design through robot state, grid movement, combat rules, and basic enemy behavior.
 
 ## Status
 
-🚧 Under Development
+Under development. The current milestone is a playable 5x5 arena with one player robot, one enemy robot, movement, basic combat, and an automatic enemy turn.
 
-## Overview
+## Game Mode
 
-BattleGrid pits robots against each other on a grid-based arena. Players take turns moving, attacking, and using special abilities, while enemy robots respond with strategy-based behavior rather than random actions. The project was built to demonstrate object-oriented design in a real, interactive application.
+BattleGrid is currently a single-player game. The player controls one robot against an enemy robot controlled by simple rule-based behavior.
+
+## Current Features
+
+- 5x5 grid-based arena
+- Player and enemy robot displayed as colored circles
+- Player movement to adjacent cells
+- Collision prevention between robots
+- Robot health and attack damage
+- Adjacent player attacks
+- Enemy turn after each successful player action
+- Enemy movement toward the player
+- Enemy attack when adjacent
+- Victory and game-over state
+- JUnit 5 tests for board, movement, enemy, and combat rules
+
+## Planned Features
+
+- Multiple robot types
+- Special abilities and cooldowns
+- Interchangeable AI strategies using the Strategy pattern
+- Obstacles and pickups
+- Improved victory conditions
+- Animations, sound, and richer visuals
 
 ## Technologies
 
 - Java 21
-- Java SE
 - JavaFX
-- Maven
+- Maven Wrapper
 - JUnit 5
-
-## Core Concepts
-
-- Object-Oriented Programming
-- Encapsulation
-- Abstraction
-- Inheritance
-- Polymorphism
-- Strategy Pattern
-- Java Collections
-- Event-Driven Programming
-
-## Planned Features
-
-- Grid-based robot movement
-- Turn-based combat
-- Multiple robot classes
-- Robot abilities
-- Enemy AI strategies
-- Obstacles and pickups
-- Victory and game-over states
 
 ## Design & Architecture
 
-BattleGrid is built around the core concepts listed above:
-
-- **Encapsulation** - robot state (health, position, abilities) is managed internally and exposed through controlled interfaces
-- **Inheritance** - a shared `Robot` base class is extended by specific robot types to reuse common behavior
-- **Polymorphism** - combat and ability logic is dispatched through overridden methods, letting each robot type behave differently under a common interface
-- **Abstraction** - abstract classes/interfaces define contracts (e.g., movement, attack, ability) that concrete robot types implement
-- **Strategy Pattern** - enemy AI behavior is encapsulated into interchangeable strategy implementations rather than hardcoded logic
-- **Java Collections** - used to manage robots, grid state, and turn queues
-- **Event-Driven Programming** — game and UI actions (moves, attacks, ability triggers) are handled via events
-- **Modular class design** - game logic, grid/board management, rendering, and AI strategy are separated into distinct, loosely-coupled modules for maintainability and testability
+- **Encapsulation** - `Robot` owns its position, health, and damage state.
+- **Abstraction** - `GameBoard` owns board rules such as movement, combat, and turns.
+- **Records** - `Position` represents an immutable row and column coordinate.
+- **Event-driven UI** - JavaFX cell clicks trigger movement or attacks.
+- **Planned Strategy pattern** - future enemy behaviors will be moved into interchangeable strategy classes.
 
 ## Getting Started
 
 ### Prerequisites
 
 - JDK 21
-- Maven 3.8+
-- JavaFX SDK (if not resolved automatically via Maven)
+- Internet access for the first Maven Wrapper run
 
-### Build
+JavaFX dependencies are downloaded automatically by Maven; a separate JavaFX SDK installation is not required.
 
-```bash
-mvn clean install
+### Build on Windows
+
+```bat
+mvnw.cmd clean install
 ```
 
-### Run
+### Run on Windows
 
-```bash
-mvn javafx:run
+```bat
+mvnw.cmd javafx:run
 ```
 
-### Test
+### Test on Windows
 
-```bash
-mvn test
+```bat
+mvnw.cmd test
 ```
 
-## Planned Project Structure
+On macOS or Linux, use `./mvnw` instead of `mvnw.cmd`.
 
-```
+## Current Project Structure
+
+```text
 BattleGrid/
 ├── src/
-│   ├── main/
-│   │   ├── java/
-│   │   │   ├── model/       # Robot classes, grid, game state
-│   │   │   ├── controller/  # Game logic, turn management
-│   │   │   ├── view/        # JavaFX UI components
-│   │   │   └── ai/          # Enemy strategy/behavior logic
-│   │   └── resources/       # FXML, images, styles
-│   └── test/
-│       └── java/            # JUnit 5 test suites
+│   ├── main/java/com/sande76/battlegrid/
+│   │   ├── BattleGridApplication.java
+│   │   └── model/
+│   │       ├── GameBoard.java
+│   │       ├── Position.java
+│   │       └── Robot.java
+│   └── test/java/com/sande76/battlegrid/model/
+│       └── GameBoardTest.java
 ├── pom.xml
+├── mvnw
+├── mvnw.cmd
 └── README.md
 ```
 
 ## License
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Author
 
