@@ -7,10 +7,12 @@ import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
@@ -106,22 +108,30 @@ public final class BattleGridApplication extends Application {
         root.setBottom(createStatus(board));
     }
 
-    private Label createStatus(GameBoard board) {
+    private VBox createStatus(GameBoard board) {
         String message;
 
-        if (board.isGameOver()) {
+        if (board.hasPlayerWon()) {
             message = "Enemy defeated - You win!";
+        } else if (board.hasPlayerLost()) {
+            message = "You lose!";
         } else {
-            message = "Player HP: " + board.getPlayerRobot().getHealth()
-                    + "    Enemy HP: " + board.getEnemyRobot().getHealth()
+            message = "Player Health: " + board.getPlayerRobot().getHealth()
+                    + "    Enemy Health: " + board.getEnemyRobot().getHealth()
                     + "\nMove next to the enemy, then click it to attack.";
         }
 
         Label status = new Label(message);
         status.setAlignment(Pos.CENTER);
-        BorderPane.setAlignment(status, Pos.CENTER);
-        BorderPane.setMargin(status, new Insets(20, 0, 0, 0));
-        return status;
+
+        Button restartButton = new Button("Restart Game");
+        restartButton.setOnAction(event -> refreshBoard(new GameBoard()));
+
+        VBox statusArea = new VBox(10, status, restartButton);
+        statusArea.setAlignment(Pos.CENTER);
+        BorderPane.setAlignment(statusArea, Pos.CENTER);
+        BorderPane.setMargin(statusArea, new Insets(20, 0, 0, 0));
+        return statusArea;
     }
 
     public static void main(String[] args) {
