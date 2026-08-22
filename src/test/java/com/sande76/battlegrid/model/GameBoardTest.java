@@ -13,8 +13,62 @@ class GameBoardTest {
         GameBoard board = new GameBoard();
 
         assertEquals(5, board.getSize());
+        assertEquals(25, board.getCells().size());
         assertEquals(new Position(2, 2), board.getPlayerRobot().getPosition());
         assertTrue(board.getRobotAt(new Position(2, 2)).isPresent());
+        assertEquals(GameState.PLAYER_TURN, board.getGameState());
+    }
+
+    @Test
+    void obstacleMakesCellBlockedAndPreventsMovement() {
+        GameBoard board = new GameBoard();
+        Position target = new Position(2, 3);
+
+        assertTrue(board.addObstacle(target, new Obstacle("Wall")));
+        assertTrue(board.getCell(target).hasObstacle());
+        assertFalse(board.isWalkable(target));
+        assertFalse(board.movePlayer(target));
+        assertEquals(new Position(2, 2), board.getPlayerRobot().getPosition());
+    }
+
+    @Test
+    void canRemoveObstacleAndWalkThroughCell() {
+        GameBoard board = new GameBoard();
+        Position target = new Position(2, 3);
+        Obstacle wall = new Obstacle("Wall");
+
+        board.addObstacle(target, wall);
+
+        assertEquals(wall, board.removeObstacle(target).orElseThrow());
+        assertTrue(board.isWalkable(target));
+        assertTrue(board.movePlayer(target));
+    }
+
+    @Test
+    void movingOntoPickupCollectsIt() {
+        GameBoard board = new GameBoard();
+        Position target = new Position(2, 3);
+        Pickup healthPack = new Pickup("Health", 25);
+
+        assertTrue(board.addPickup(target, healthPack));
+        assertEquals(healthPack, board.getCell(target).getPickup().orElseThrow());
+
+        assertTrue(board.movePlayer(target));
+
+        assertTrue(board.getCell(target).getPickup().isEmpty());
+    }
+
+    @Test
+    void healthPickupRestoresPlayerHealthWhenCollected() {
+        GameBoard board = new GameBoard();
+        Position target = new Position(2, 3);
+
+        board.getPlayerRobot().takeDamage(50);
+        board.addPickup(target, new Pickup("Health", 25));
+
+        assertEquals(50, board.getPlayerRobot().getHealth());
+        assertTrue(board.movePlayer(target));
+        assertEquals(75, board.getPlayerRobot().getHealth());
     }
 
     @Test
@@ -99,7 +153,7 @@ class GameBoardTest {
         boolean attacked = board.attackEnemy();
 
         assertFalse(attacked);
-        assertEquals(Robot.DEFAULT_HEALTH, board.getEnemyRobot().getHealth());
+        assertEquals(board.getEnemyRobot().getMaxHealth(), board.getEnemyRobot().getHealth());
     }
 
     @Test
@@ -109,24 +163,36 @@ class GameBoardTest {
         boolean attacked = board.attackEnemy();
 
         assertTrue(attacked);
-        assertEquals(75, board.getEnemyRobot().getHealth());
+        assertEquals(
+                board.getEnemyRobot().getMaxHealth() - board.getPlayerRobot().getAttackDamage(),
+                board.getEnemyRobot().getHealth()
+        );
     }
 
     @Test
     void enemyAttacksWhenAdjacentAfterPlayerAction() {
         GameBoard board = createBoardWithPlayerNextToEnemy();
 
-        assertEquals(75, board.getPlayerRobot().getHealth());
+        assertEquals(
+                board.getPlayerRobot().getMaxHealth() - board.getEnemyRobot().getAttackDamage(),
+                board.getPlayerRobot().getHealth()
+        );
 
         board.attackEnemy();
 
-        assertEquals(50, board.getPlayerRobot().getHealth());
+        assertEquals(
+                board.getPlayerRobot().getMaxHealth()
+                        - (2 * board.getEnemyRobot().getAttackDamage()),
+                board.getPlayerRobot().getHealth()
+        );
     }
 
     @Test
     void defeatingEnemyEndsGameWithPlayerVictory() {
         GameBoard board = createBoardWithPlayerNextToEnemy();
-        board.getEnemyRobot().takeDamage(75);
+        board.getEnemyRobot().takeDamage(
+                board.getEnemyRobot().getHealth() - board.getPlayerRobot().getAttackDamage()
+        );
 
         boolean attacked = board.attackEnemy();
 
@@ -136,6 +202,7 @@ class GameBoardTest {
         assertTrue(board.isGameOver());
         assertTrue(board.hasPlayerWon());
         assertFalse(board.hasPlayerLost());
+        assertEquals(GameState.PLAYER_WON, board.getGameState());
         assertTrue(board.getRobotAt(new Position(0, 0)).isEmpty());
     }
 
@@ -143,14 +210,15 @@ class GameBoardTest {
     void enemyCanDefeatPlayer() {
         GameBoard board = createBoardWithPlayerNextToEnemy();
 
-        assertTrue(board.attackEnemy());
-        assertTrue(board.attackEnemy());
-        assertTrue(board.attackEnemy());
+        while (!board.isGameOver()) {
+            assertTrue(board.attackEnemy());
+        }
 
         assertEquals(0, board.getPlayerRobot().getHealth());
         assertTrue(board.isGameOver());
         assertTrue(board.hasPlayerLost());
         assertFalse(board.hasPlayerWon());
+        assertEquals(GameState.PLAYER_LOST, board.getGameState());
         assertFalse(board.attackEnemy());
     }
 

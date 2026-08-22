@@ -1,7 +1,10 @@
 package com.sande76.battlegrid;
 
 import com.sande76.battlegrid.model.GameBoard;
+import com.sande76.battlegrid.model.Obstacle;
+import com.sande76.battlegrid.model.Pickup;
 import com.sande76.battlegrid.model.Position;
+import com.sande76.battlegrid.model.BoardCell;
 
 import javafx.application.Application;
 import javafx.geometry.Insets;
@@ -15,6 +18,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
 // Builds and displays the BattleGrid screen.
@@ -27,6 +31,16 @@ public final class BattleGridApplication extends Application {
     @Override
     public void start(Stage stage) {
         GameBoard board = new GameBoard();
+
+        board.addObstacle(
+            new Position(1, 1),
+            new Obstacle("Wall")
+        );
+
+        board.addPickup(
+            new Position(3, 3),
+            new Pickup("Health", 25)
+        );
 
         // Place the title, grid, and status text on the screen.
         root = new BorderPane();
@@ -70,20 +84,49 @@ public final class BattleGridApplication extends Application {
         cell.setPrefSize(CELL_SIZE, CELL_SIZE);
         cell.setStyle("-fx-background-color: white; -fx-border-color: black;");
 
-        // Mark the cell occupied by the player robot.
-        board.getRobotAt(position).ifPresent(robot -> {
-            boolean isPlayer = robot == board.getPlayerRobot();
+        BoardCell boardCell = board.getCell(position);
 
-            Circle marker = new Circle(20);
-            marker.setFill(isPlayer ? Color.CORNFLOWERBLUE : Color.LIGHTCORAL);
-            marker.setStroke(Color.BLACK);
+        // Display an obstacle.
+        if (boardCell.hasObstacle()) {
+            Rectangle obstacle = new Rectangle(40, 40);
+            obstacle.setFill(Color.DARKGRAY);
+            obstacle.setStroke(Color.BLACK);
 
-            Label initial = new Label(isPlayer ? "P" : "E");
-            initial.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+            cell.getChildren().add(obstacle);
+            cell.setAccessibleText("Obstacle");
+        } else {
+            // Display a pickup.
+            boardCell.getPickup().ifPresent(pickup -> {
+                Label pickupLabel = new Label("+" + pickup.getValue());
+                pickupLabel.setStyle(
+                        "-fx-font-size: 14px; "
+                        + "-fx-font-weight: bold; "
+                        + "-fx-text-fill: green;"
+                );
 
-            cell.getChildren().addAll(marker, initial);
-            cell.setAccessibleText(robot.getName());
-        });
+                cell.getChildren().add(pickupLabel);
+                cell.setAccessibleText(pickup.getType() + " pickup");
+            });
+
+            // Display a robot.
+            board.getRobotAt(position).ifPresent(robot -> {
+                boolean isPlayer = robot == board.getPlayerRobot();
+
+                Circle marker = new Circle(20);
+                marker.setFill(
+                        isPlayer ? Color.CORNFLOWERBLUE : Color.LIGHTCORAL
+                );
+                marker.setStroke(Color.BLACK);
+
+                Label initial = new Label(isPlayer ? "P" : "E");
+                initial.setStyle(
+                        "-fx-font-size: 16px; -fx-font-weight: bold;"
+                );
+
+                cell.getChildren().addAll(marker, initial);
+                cell.setAccessibleText(robot.getName());
+            });
+        }
 
         cell.setOnMouseClicked(event -> handleCellClick(board, position));
         return cell;
