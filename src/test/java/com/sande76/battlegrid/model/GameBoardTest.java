@@ -38,6 +38,24 @@ class GameBoardTest {
     }
 
     @Test
+    void successfulPlayerMoveTriggersExactlyOneEnemyMove() {
+        GameBoard board = new GameBoard();
+
+        board.movePlayer(new Position(2, 3));
+
+        assertEquals(new Position(1, 0), board.getEnemyRobot().getPosition());
+    }
+
+    @Test
+    void rejectedPlayerMoveDoesNotTriggerEnemyTurn() {
+        GameBoard board = new GameBoard();
+
+        board.movePlayer(new Position(3, 3));
+
+        assertEquals(new Position(0, 0), board.getEnemyRobot().getPosition());
+    }
+
+    @Test
     void rejectsDiagonalMovement() {
         GameBoard board = new GameBoard();
 
@@ -95,17 +113,45 @@ class GameBoardTest {
     }
 
     @Test
-    void defeatingEnemyEndsGame() {
+    void enemyAttacksWhenAdjacentAfterPlayerAction() {
         GameBoard board = createBoardWithPlayerNextToEnemy();
 
-        for (int attack = 0; attack < 4; attack++) {
-            assertTrue(board.attackEnemy());
-        }
+        assertEquals(75, board.getPlayerRobot().getHealth());
 
+        board.attackEnemy();
+
+        assertEquals(50, board.getPlayerRobot().getHealth());
+    }
+
+    @Test
+    void defeatingEnemyEndsGameWithPlayerVictory() {
+        GameBoard board = createBoardWithPlayerNextToEnemy();
+        board.getEnemyRobot().takeDamage(75);
+
+        boolean attacked = board.attackEnemy();
+
+        assertTrue(attacked);
         assertEquals(0, board.getEnemyRobot().getHealth());
         assertTrue(board.getEnemyRobot().isDestroyed());
         assertTrue(board.isGameOver());
+        assertTrue(board.hasPlayerWon());
+        assertFalse(board.hasPlayerLost());
         assertTrue(board.getRobotAt(new Position(0, 0)).isEmpty());
+    }
+
+    @Test
+    void enemyCanDefeatPlayer() {
+        GameBoard board = createBoardWithPlayerNextToEnemy();
+
+        assertTrue(board.attackEnemy());
+        assertTrue(board.attackEnemy());
+        assertTrue(board.attackEnemy());
+
+        assertEquals(0, board.getPlayerRobot().getHealth());
+        assertTrue(board.isGameOver());
+        assertTrue(board.hasPlayerLost());
+        assertFalse(board.hasPlayerWon());
+        assertFalse(board.attackEnemy());
     }
 
     private GameBoard createBoardWithPlayerNextToEnemy() {
