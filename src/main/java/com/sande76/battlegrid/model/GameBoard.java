@@ -12,6 +12,7 @@ public final class GameBoard {
     private final int size;
     private final Robot playerRobot;
     private final Robot enemyRobot;
+    private boolean playerTurn = true;
 
     public GameBoard() {
         this(DEFAULT_SIZE);
@@ -57,7 +58,7 @@ public final class GameBoard {
     }
 
     public boolean movePlayer(Position target) {
-        if (isGameOver() || !isInside(target)) {
+        if (!playerTurn || isGameOver() || !isInside(target)) {
             return false;
         }
 
@@ -70,24 +71,31 @@ public final class GameBoard {
         }
 
         playerRobot.moveTo(target);
+        endPlayerTurn();
         return true;
     }
 
     public boolean attackEnemy() {
-        if (enemyRobot.isDestroyed()) {
-            return false;
-        }
-
-        if (!isAdjacent(playerRobot.getPosition(), enemyRobot.getPosition())) {
+        if (!playerTurn || isGameOver()
+                || !isAdjacent(playerRobot.getPosition(), enemyRobot.getPosition())) {
             return false;
         }
 
         enemyRobot.takeDamage(playerRobot.getAttackDamage());
+        endPlayerTurn();
         return true;
     }
 
     public boolean isGameOver() {
-        return enemyRobot.isDestroyed();
+        return enemyRobot.isDestroyed() || playerRobot.isDestroyed();
+    }
+
+    public boolean hasPlayerWon() {
+        return enemyRobot.isDestroyed() && !playerRobot.isDestroyed();
+    }
+
+    public boolean hasPlayerLost() {
+        return playerRobot.isDestroyed();
     }
 
     private boolean isAdjacent(Position first, Position second) {
@@ -95,4 +103,45 @@ public final class GameBoard {
         int columnDifference = Math.abs(first.column() - second.column());
         return rowDifference + columnDifference == 1;
     }
+
+    private void endPlayerTurn(){
+        playerTurn = false;
+        playEnemyTurn();
+        playerTurn = true;
+
+    }
+
+    private void playEnemyTurn(){
+        if (isGameOver()) {
+            return;
+        }
+
+        if (isAdjacent(enemyRobot.getPosition(),playerRobot.getPosition())) {
+
+            playerRobot.takeDamage(enemyRobot.getAttackDamage());
+            return;
+        }
+
+        enemyRobot.moveTo(nextStepTowardPlayer());
+    }
+
+    private Position nextStepTowardPlayer() {
+        Position enemyPosition = enemyRobot.getPosition();
+        Position playerPosition = playerRobot.getPosition();
+
+        int row = enemyPosition.row();
+        int column = enemyPosition.column();
+
+        if (row != playerPosition.row()) {
+            row += Integer.signum(playerPosition.row() - row);
+
+        } else if (column != playerPosition.column()) {
+            column += Integer.signum(playerPosition.column() - column
+            );
+        }
+
+        return new Position(row, column);
+    }
+
+
 }
